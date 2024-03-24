@@ -13,21 +13,21 @@ namespace Transitions
         private List<Image> textures1 = new List<Image>();
         private List<Image> textures2 = new List<Image>();
         private List<Image> alphaImages = new List<Image>();
-        private double gamma = 0.5; // Valeur par défaut pour gamma
-        private double blurValue = 0.5; // Valeur par défaut pour le flou
+        private double gamma = 0.5; // Valeur par dÃ©faut pour gamma
+        private double blurValue = 0.5; // Valeur par dÃ©faut pour le flou
         private FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
 
         public Form1()
         {
             InitializeComponent();
             trackBarContrast.Minimum = 1;
-            trackBarContrast.Maximum = 100;
-            trackBarContrast.Value = 1; // Valeur par défaut
-            trackBarContrast.TickFrequency = 10; // Fréquence des marqueurs sur la piste
+            trackBarContrast.Maximum = 20;
+            trackBarContrast.Value = 1; // Valeur par dÃ©faut
+            trackBarContrast.TickFrequency = 2; // FrÃ©quence des marqueurs sur la piste
             //trackBarFlou.Minimum = 1;
             //trackBarFlou.Maximum = 100;
-            //trackBarFlou.Value = 1; // Valeur par défaut
-            //trackBarFlou.TickFrequency = 10; // Fréquence des marqueurs sur la piste
+            //trackBarFlou.Value = 1; // Valeur par dÃ©faut
+            //trackBarFlou.TickFrequency = 10; // FrÃ©quence des marqueurs sur la piste
             pictureBoxTexture1.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBoxTexture2.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBoxAlpha1.SizeMode = PictureBoxSizeMode.Zoom;
@@ -37,7 +37,7 @@ namespace Transitions
 
         private void UpdatePictureBoxes()
         {
-            // Effacer d'abord tous les contrôles des FlowLayoutPanels
+            // Effacer d'abord tous les contrÃ´les des FlowLayoutPanels
             flowLayoutPanelTextures1.Controls.Clear();
             flowLayoutPanelTextures2.Controls.Clear();
             flowLayoutPanelAlphaImages.Controls.Clear();
@@ -75,16 +75,16 @@ namespace Transitions
 
         private Image RotateAndResizeImageForPreview(Image image, double angle)
         {
-            // Créer une nouvelle image avec la taille spécifiée
+            // CrÃ©er une nouvelle image avec la taille spÃ©cifiÃ©e
             Bitmap rotatedImage = new Bitmap(46, 45);
 
-            // Créer une matrice de transformation pour la rotation
+            // CrÃ©er une matrice de transformation pour la rotation
             Matrix matrix = new Matrix();
-            matrix.Translate(23, 22); // Déplacer l'origine légèrement vers la droite pour compenser l'ajustement
+            matrix.Translate(23, 22); // DÃ©placer l'origine lÃ©gÃ¨rement vers la droite pour compenser l'ajustement
             matrix.Rotate((float)angle); // Rotation
-            matrix.Translate(-16, -16); // Ajustement après la rotation
+            matrix.Translate(-16, -16); // Ajustement aprÃ¨s la rotation
 
-            // Dessiner l'image d'origine rotatée sur la nouvelle image
+            // Dessiner l'image d'origine rotatÃ©e sur la nouvelle image
             using (Graphics graphics = Graphics.FromImage(rotatedImage))
             {
                 graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
@@ -110,16 +110,16 @@ namespace Transitions
                 Image texture2 = textures2[0];
                 Image alphaImage = alphaImages[0];
 
-                // Générer la première image de transition
+                // GÃ©nÃ©rer la premiÃ¨re image de transition
                 Bitmap transitionImage = GenerateTransition(texture1, texture2, alphaImage);
 
-                // Afficher la première image de transition dans pictureBoxPreview
+                // Afficher la premiÃ¨re image de transition dans pictureBoxPreview
                 pictureBoxPreview.Image = transitionImage;
 
-                // Redimensionner et pivoter l'image pour la prévisualisation
+                // Redimensionner et pivoter l'image pour la prÃ©visualisation
                 Image previewImage = RotateAndResizeImageForPreview(transitionImage, 45);
 
-                // Afficher la prévisualisation dans pictureBoxLandtile
+                // Afficher la prÃ©visualisation dans pictureBoxLandtile
                 pictureBoxLandtile.Image = previewImage;
             }
         }
@@ -253,7 +253,7 @@ namespace Transitions
 
         private void btnSelectAlpha_Click(object sender, EventArgs e)
         {
-            folderBrowserDialog.Description = "Sélectionner le dossier contenant les images alpha";
+            folderBrowserDialog.Description = "SÃ©lectionner le dossier contenant les images alpha";
 
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
             {
@@ -270,7 +270,7 @@ namespace Transitions
                         alphaImages.Add(alphaImage);
                     }
 
-                    MessageBox.Show($"Chargement réussi : {alphaImages.Count} images alpha chargées.", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"Chargement rÃ©ussi : {alphaImages.Count} images alpha chargÃ©es.", "SuccÃ¨s", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 catch (Exception ex)
                 {
@@ -291,7 +291,7 @@ namespace Transitions
         {
             if (textures1.Count == 0 || textures2.Count == 0 || alphaImages.Count == 0)
             {
-                MessageBox.Show("Veuillez sélectionner les textures et les images alpha avant de générer la transition.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Veuillez sÃ©lectionner les textures et les images alpha avant de gÃ©nÃ©rer la transition.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -309,17 +309,17 @@ namespace Transitions
                     string transitionFileName = Path.Combine(folderBrowserDialog.SelectedPath, $"Transition_{alphaIndex + 1}.bmp");
                     transitionImage.Save(transitionFileName, ImageFormat.Bmp);
 
-                    // Prévisualiser la transition
+                    // PrÃ©visualiser la transition
                     Image previewImage = RotateAndResizeImageForPreview(transitionImage, 45);
 
-                    // Enregistrer les images avec rotation à 45 degrés et redimensionnées
+                    // Enregistrer les images avec rotation Ã  45 degrÃ©s et redimensionnÃ©es
                     string rotatedTransitionFileName = Path.Combine(folderBrowserDialog.SelectedPath, $"RotatedTransition_{alphaIndex + 1}.bmp");
                     previewImage.Save(rotatedTransitionFileName, ImageFormat.Bmp);
 
                     alphaIndex++;
                 }
 
-                MessageBox.Show("Génération terminée.", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("GÃ©nÃ©ration terminÃ©e.", "SuccÃ¨s", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 // Vider les listes
                 textures1.Clear();
@@ -333,7 +333,7 @@ namespace Transitions
                 pictureBoxPreview.Image = null;
                 pictureBoxLandtile.Image = null;
 
-                // Effacer les contrôles des FlowLayoutPanels
+                // Effacer les contrÃ´les des FlowLayoutPanels
                 flowLayoutPanelTextures1.Controls.Clear();
                 flowLayoutPanelTextures2.Controls.Clear();
                 flowLayoutPanelAlphaImages.Controls.Clear();
@@ -344,7 +344,7 @@ namespace Transitions
 
 
 
-        // Définition de la classe BlurFilter pour le flou gaussien
+        // DÃ©finition de la classe BlurFilter pour le flou gaussien
         public class BlurFilter
         {
             private double[] kernel;
