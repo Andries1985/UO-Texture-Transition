@@ -100,9 +100,9 @@
             // 
             // trackBarContrast
             // 
-            trackBarContrast.LargeChange = 10;
+            trackBarContrast.LargeChange = 1;
             resources.ApplyResources(trackBarContrast, "trackBarContrast");
-            trackBarContrast.Maximum = 100;
+            trackBarContrast.Maximum = 10;
             trackBarContrast.Name = "trackBarContrast";
             trackBarContrast.Scroll += trackBarContrast_Scroll;
             // 
