@@ -1,3 +1,4 @@
+using Microsoft.VisualBasic.Devices;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -16,14 +17,17 @@ namespace Transitions
         private double gamma = 0.5; // Valeur par défaut pour gamma
         private double blurValue = 0.5; // Valeur par défaut pour le flou
         private FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+        // Ajouter ces variables membres pour suivre l'index de l'image alpha actuellement affichée
+        private int currentAlphaIndex = 0;
+        private int totalAlphaImages = 0;
 
         public Form1()
         {
             InitializeComponent();
             trackBarContrast.Minimum = 1;
-            trackBarContrast.Maximum = 100;
+            trackBarContrast.Maximum = 20;
             trackBarContrast.Value = 1; // Valeur par défaut
-            trackBarContrast.TickFrequency = 10; // Fréquence des marqueurs sur la piste
+            trackBarContrast.TickFrequency = 2; // Fréquence des marqueurs sur la piste
             //trackBarFlou.Minimum = 1;
             //trackBarFlou.Maximum = 100;
             //trackBarFlou.Value = 1; // Valeur par défaut
@@ -33,6 +37,7 @@ namespace Transitions
             pictureBoxAlpha1.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBoxPreview.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBoxLandtile.SizeMode = PictureBoxSizeMode.Zoom;
+            totalAlphaImages = alphaImages.Count;
         }
 
         private void UpdatePictureBoxes()
@@ -97,20 +102,68 @@ namespace Transitions
             return rotatedImage;
         }
 
+        // Gestionnaire d'événement pour le bouton "Précédent"
+        private void btnPrevious_Click(object sender, EventArgs e)
+        {
+            // Décrémenter l'index de l'image alpha actuellement affichée
+            currentAlphaIndex--;
+
+            // Vérifier si l'index est inférieur à zéro, revenir à la dernière image si c'est le cas
+            if (currentAlphaIndex < 0)
+            {
+                currentAlphaIndex = alphaImages.Count - 1;
+            }
+
+            // Mettre à jour la prévisualisation avec l'image alpha correspondante
+            UpdatePreview();
+            // Mettre à jour le label "compteur"
+            UpdateCounterLabel();
+        }
+
+        // Gestionnaire d'événement pour le bouton "Suivant"
+        private void btnNext_Click(object sender, EventArgs e)
+        {
+            // Incrémenter l'index de l'image alpha actuellement affichée
+            currentAlphaIndex++;
+
+            // Vérifier si l'index dépasse le nombre total d'images, revenir à la première image si c'est le cas
+            if (currentAlphaIndex >= alphaImages.Count)
+            {
+                currentAlphaIndex = 0;
+            }
+
+            // Mettre à jour la prévisualisation avec l'image alpha correspondante
+            UpdatePreview();
+            // Mettre à jour le label "compteur"
+            UpdateCounterLabel();
+        }
+
+        // Méthode pour mettre à jour le label "compteur" avec le numéro actuel de l'image alpha
+        private void UpdateCounterLabel()
+        {
+            int currentNumber = currentAlphaIndex + 1; // Ajouter 1 car les indices commencent à 0
+            int totalNumber = alphaImages.Count;
+            Compteur.Text = $"{currentNumber}/{totalNumber}";
+        }
 
 
 
 
 
+
+        // Mettre à jour la prévisualisation avec l'image alpha correspondant à l'index actuel
         private void UpdatePreview()
         {
-            if (alphaImages.Count > 0 && textures1.Count > 0 && textures2.Count > 0)
+            // Vérifier si des images alpha sont disponibles
+            if (alphaImages.Count > 0)
             {
+                // Obtenir l'image alpha correspondant à l'index actuel
+                Image alphaImage = alphaImages[currentAlphaIndex];
+
+                // Générer la première image de transition avec l'image alpha sélectionnée
+                // Utilisez également les autres textures comme vous le faites actuellement
                 Image texture1 = textures1[0];
                 Image texture2 = textures2[0];
-                Image alphaImage = alphaImages[0];
-
-                // Générer la première image de transition
                 Bitmap transitionImage = GenerateTransition(texture1, texture2, alphaImage);
 
                 // Afficher la première image de transition dans pictureBoxPreview
@@ -123,6 +176,7 @@ namespace Transitions
                 pictureBoxLandtile.Image = previewImage;
             }
         }
+
 
 
         private void trackBarContrast_Scroll(object sender, EventArgs e)

@@ -44,6 +44,9 @@
             flowLayoutPanelTextures2 = new FlowLayoutPanel();
             flowLayoutPanelAlphaImages = new FlowLayoutPanel();
             pictureBoxLandtile = new PictureBox();
+            btnPrevious = new Button();
+            btnNext = new Button();
+            Compteur = new Label();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTexture1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTexture2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxAlpha1).BeginInit();
@@ -100,9 +103,8 @@
             // 
             // trackBarContrast
             // 
-            trackBarContrast.LargeChange = 10;
+            trackBarContrast.LargeChange = 1;
             resources.ApplyResources(trackBarContrast, "trackBarContrast");
-            trackBarContrast.Maximum = 100;
             trackBarContrast.Name = "trackBarContrast";
             trackBarContrast.Scroll += trackBarContrast_Scroll;
             // 
@@ -148,10 +150,32 @@
             pictureBoxLandtile.Name = "pictureBoxLandtile";
             pictureBoxLandtile.TabStop = false;
             // 
+            // btnPrevious
+            // 
+            resources.ApplyResources(btnPrevious, "btnPrevious");
+            btnPrevious.Name = "btnPrevious";
+            btnPrevious.UseVisualStyleBackColor = true;
+            btnPrevious.Click += btnPrevious_Click;
+            // 
+            // btnNext
+            // 
+            resources.ApplyResources(btnNext, "btnNext");
+            btnNext.Name = "btnNext";
+            btnNext.UseVisualStyleBackColor = true;
+            btnNext.Click += btnNext_Click;
+            // 
+            // Compteur
+            // 
+            resources.ApplyResources(Compteur, "Compteur");
+            Compteur.Name = "Compteur";
+            // 
             // Form1
             // 
             resources.ApplyResources(this, "$this");
             AutoScaleMode = AutoScaleMode.Font;
+            Controls.Add(Compteur);
+            Controls.Add(btnNext);
+            Controls.Add(btnPrevious);
             Controls.Add(pictureBoxLandtile);
             Controls.Add(flowLayoutPanelAlphaImages);
             Controls.Add(flowLayoutPanelTextures2);
@@ -196,5 +220,8 @@
         private FlowLayoutPanel flowLayoutPanelAlphaImages;
         private TrackBar trackBarFlou;
         private PictureBox pictureBoxLandtile;
+        private Button btnPrevious;
+        private Button btnNext;
+        private Label Compteur;
     }
 }
