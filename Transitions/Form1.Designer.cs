@@ -47,6 +47,17 @@
             btnPrevious = new Button();
             btnNext = new Button();
             Compteur = new Label();
+            lblAlphaName = new Label();
+            TextBox1 = new TextBox();
+            label3 = new Label();
+            textBoxBrushNumberA = new TextBox();
+            textBoxBrushNumberB = new TextBox();
+            textBoxNameTextureA = new TextBox();
+            textBoxNameTextureB = new TextBox();
+            label4 = new Label();
+            label5 = new Label();
+            label6 = new Label();
+            label7 = new Label();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTexture1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTexture2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxAlpha1).BeginInit();
@@ -169,10 +180,81 @@
             resources.ApplyResources(Compteur, "Compteur");
             Compteur.Name = "Compteur";
             // 
+            // lblAlphaName
+            // 
+            resources.ApplyResources(lblAlphaName, "lblAlphaName");
+            lblAlphaName.Name = "lblAlphaName";
+            // 
+            // TextBox1
+            // 
+            resources.ApplyResources(TextBox1, "TextBox1");
+            TextBox1.Name = "TextBox1";
+            TextBox1.TextChanged += TextBox1_TextChanged;
+            // 
+            // label3
+            // 
+            resources.ApplyResources(label3, "label3");
+            label3.Name = "label3";
+            // 
+            // textBoxBrushNumberA
+            // 
+            resources.ApplyResources(textBoxBrushNumberA, "textBoxBrushNumberA");
+            textBoxBrushNumberA.Name = "textBoxBrushNumberA";
+            textBoxBrushNumberA.TextChanged += textBoxBrushNumberA_TextChanged;
+            // 
+            // textBoxBrushNumberB
+            // 
+            resources.ApplyResources(textBoxBrushNumberB, "textBoxBrushNumberB");
+            textBoxBrushNumberB.Name = "textBoxBrushNumberB";
+            textBoxBrushNumberB.TextChanged += textBoxBrushNumberB_TextChanged;
+            // 
+            // textBoxNameTextureA
+            // 
+            resources.ApplyResources(textBoxNameTextureA, "textBoxNameTextureA");
+            textBoxNameTextureA.Name = "textBoxNameTextureA";
+            textBoxNameTextureA.TextChanged += textBoxNameTextureA_TextChanged;
+            // 
+            // textBoxNameTextureB
+            // 
+            resources.ApplyResources(textBoxNameTextureB, "textBoxNameTextureB");
+            textBoxNameTextureB.Name = "textBoxNameTextureB";
+            textBoxNameTextureB.TextChanged += textBoxNameTextureB_TextChanged;
+            // 
+            // label4
+            // 
+            resources.ApplyResources(label4, "label4");
+            label4.Name = "label4";
+            // 
+            // label5
+            // 
+            resources.ApplyResources(label5, "label5");
+            label5.Name = "label5";
+            // 
+            // label6
+            // 
+            resources.ApplyResources(label6, "label6");
+            label6.Name = "label6";
+            // 
+            // label7
+            // 
+            resources.ApplyResources(label7, "label7");
+            label7.Name = "label7";
+            // 
             // Form1
             // 
             resources.ApplyResources(this, "$this");
             AutoScaleMode = AutoScaleMode.Font;
+            Controls.Add(label7);
+            Controls.Add(label6);
+            Controls.Add(label5);
+            Controls.Add(label4);
+            Controls.Add(textBoxNameTextureB);
+            Controls.Add(textBoxNameTextureA);
+            Controls.Add(textBoxBrushNumberB);
+            Controls.Add(textBoxBrushNumberA);
+            Controls.Add(label3);
+            Controls.Add(TextBox1);
+            Controls.Add(lblAlphaName);
             Controls.Add(Compteur);
             Controls.Add(btnNext);
             Controls.Add(btnPrevious);
@@ -218,10 +300,21 @@
         private FlowLayoutPanel flowLayoutPanelTextures1;
         private FlowLayoutPanel flowLayoutPanelTextures2;
         private FlowLayoutPanel flowLayoutPanelAlphaImages;
-        private TrackBar trackBarFlou;
+        //private TrackBar trackBarFlou;
         private PictureBox pictureBoxLandtile;
         private Button btnPrevious;
         private Button btnNext;
         private Label Compteur;
+        private Label lblAlphaName;
+        private TextBox TextBox1;
+        private Label label3;
+        private TextBox textBoxBrushNumberA;
+        private TextBox textBoxBrushNumberB;
+        private TextBox textBoxNameTextureA;
+        private TextBox textBoxNameTextureB;
+        private Label label4;
+        private Label label5;
+        private Label label6;
+        private Label label7;
     }
 }

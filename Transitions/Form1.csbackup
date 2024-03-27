@@ -8,7 +8,7 @@ namespace Transitions
     public partial class Form1 : Form
     {
         // Déclarez textBoxValue en tant que variable membre
-        
+        private string textBoxValue = "";
         // Déclarez une instance de la classe XMLgenerator
         private XMLgenerator xmlGenerator = new XMLgenerator();
         private List<Image> textures1 = new List<Image>();
@@ -435,16 +435,8 @@ namespace Transitions
                 // Affectez la valeur de TextBox1.Text à la propriété InitialLandTypeId
                 XMLgenerator.InitialLandTypeId = TextBox1.Text;
 
-                // Récupérer les valeurs des TextBox
-                string nameTextureA = textBoxNameTextureA.Text;
-                string nameTextureB = textBoxNameTextureB.Text;
-                string brushIdA = textBoxBrushNumberA.Text;
-                string brushIdB = textBoxBrushNumberB.Text;
-
-
-
-                // Appeler GenerateXML avec toutes les valeurs nécessaires
-                xmlGenerator.GenerateXML(texture1FilePaths, texture2FilePaths, alphaImageFileNames, outputPath, nameTextureA, nameTextureB, brushIdA, brushIdB);
+                // Appelez la méthode GenerateXML à partir de l'instance xmlGenerator créée
+                xmlGenerator.GenerateXML(texture1FilePaths, texture2FilePaths, alphaImageFileNames, outputPath);
 
                 MessageBox.Show("Génération terminée.", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
@@ -571,25 +563,24 @@ namespace Transitions
 
         private void textBoxNameTextureA_TextChanged(object sender, EventArgs e)
         {
-            // Récupérer le texte du TextBox et l'assigner à nameTextureA
+            // Assigner la valeur du TextBox à la variable de classe
             nameTextureA = textBoxNameTextureA.Text;
-        }
-
-        private void textBoxNameTextureB_TextChanged(object sender, EventArgs e)
-        {
-            // Récupérer le texte du TextBox et l'assigner à nameTextureB
-            nameTextureB = textBoxNameTextureB.Text;
         }
 
         private void textBoxBrushNumberA_TextChanged(object sender, EventArgs e)
         {
-            // Récupérer le texte du TextBox et l'assigner à brushIdA
+            // Assigner la valeur du TextBox à la variable de classe
             brushIdA = textBoxBrushNumberA.Text;
+        }
+
+        private void textBoxNameTextureB_TextChanged(object sender, EventArgs e)
+        {
+            // Assigner la valeur du TextBox à la variable de classe
+            nameTextureB = textBoxNameTextureB.Text;
         }
 
         private void textBoxBrushNumberB_TextChanged(object sender, EventArgs e)
         {
-            // Récupérer le texte du TextBox et l'assigner à brushIdB
             brushIdB = textBoxBrushNumberB.Text;
         }
     }
