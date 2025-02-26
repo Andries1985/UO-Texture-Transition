@@ -59,14 +59,14 @@ public partial class Form1 : Form
         flowLayoutPanelAlphaImages.Controls.Clear();
 
         // Afficher les textures 1
-        foreach (var texture in textures1) AddPictureBoxToFlowLayout(flowLayoutPanelTextures1, texture, 128, 128);
+        foreach (var texture in textures1) AddPictureBoxToFlowLayout(flowLayoutPanelTextures1, texture, 64, 64);
 
         // Afficher les textures 2
-        foreach (var texture in textures2) AddPictureBoxToFlowLayout(flowLayoutPanelTextures2, texture, 128, 128);
+        foreach (var texture in textures2) AddPictureBoxToFlowLayout(flowLayoutPanelTextures2, texture, 64, 64);
 
         // Afficher les alphaImages
         foreach (var alphaImage in alphaImages)
-            AddPictureBoxToFlowLayout(flowLayoutPanelAlphaImages, alphaImage, 128, 128);
+            AddPictureBoxToFlowLayout(flowLayoutPanelAlphaImages, alphaImage, 64, 64);
     }
 
     private void AddPictureBoxToFlowLayout(FlowLayoutPanel flowLayoutPanel, Image image, int width, int height)
