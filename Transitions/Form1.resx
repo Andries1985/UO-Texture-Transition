@@ -574,7 +574,7 @@
         <value>18</value>
     </data>
     <data name="Compteur.Text" xml:space="preserve">
-    <value>Counter</value>
+    <value>Count</value>
   </data>
     <data name="&gt;&gt;Compteur.Name" xml:space="preserve">
     <value>Compteur</value>
