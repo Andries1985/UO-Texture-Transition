@@ -82,32 +82,31 @@ public partial class Form1 : Form
 
     private Image RotateAndResizeImageForPreview(Image image, double angle)
     {
-        // Cr�er une nouvelle image avec la taille sp�cifi�e
+        // Create a new image with the specified size.
         // Bitmap rotatedImage = new Bitmap(46, 45);
         var rotatedImage = new Bitmap(44, 44);
 
-        // Cr�er une matrice de transformation pour la rotation
+        // Create a transformation matrix for rotation.
         var matrix = new Matrix();
-        // matrix.Translate(23, 22); // Move the origin slightly to the right to compensate for the adjustment (46x45)
-        matrix.Translate(22, 22);
+        // matrix.Translate(23, 22); // Move the origin slightly to the right to compensate for the adjustment (46x45).
+        matrix.Translate(21, 21);
         matrix.Rotate((float)angle); // Rotation
-        matrix.Translate(-16, -16); // Adjustment after rotation
+        matrix.Translate(-15, -15); // Adjustment after rotation
 
-        // Dessiner l'image d'origine rotat�e sur la nouvelle image
+        // Draw the original rotated image onto the new image.
         using (var graphics = Graphics.FromImage(rotatedImage))
         {
             graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
             graphics.Transform = matrix;
 
-            // Dessiner l'image d'origine sur la nouvelle image en ajustant la taille pour qu'elle mesure exactement 46x45 pixels
+            // Draw the original image onto the new image, adjusting the size so that it measures exactly 46x45 pixels
             // graphics.DrawImage(image, -1, 0, 34, 33);
-            graphics.DrawImage(image, -1, 0, 32, 32);
+            graphics.DrawImage(image, 0, -1, 32, 32);
         }
 
         return rotatedImage;
     }
 
-    // Gestionnaire d'�v�nement pour le bouton "Pr�c�dent"
     // Gestionnaire d'�v�nement pour le bouton "Pr�c�dent"
     private void btnPrevious_Click(object sender, EventArgs e)
     {
@@ -424,7 +423,7 @@ public partial class Form1 : Form
             xmlGenerator.GenerateXML(texture1FilePaths, texture2FilePaths, alphaImageFileNames, outputPath,
                 nameTextureA, nameTextureB, brushIdA, brushIdB);
 
-            MessageBox.Show("Generate Completed.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Generation completed!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             // R�initialiser les listes et les contr�les
             textures1.Clear();
