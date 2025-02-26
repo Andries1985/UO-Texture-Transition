@@ -1,3 +1,7 @@
+This tool was made by Prapilk. All credits go to him.
+
+Message from Prapilk:
+
 Hello everyone,
 
 To make life easier for everyone and so that I no longer have to explain how to do it :D I managed to do this program. 
