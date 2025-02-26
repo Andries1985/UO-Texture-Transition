@@ -1,598 +1,548 @@
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using System.Runtime.Intrinsics.X86;
 
+namespace Transitions;
 
-namespace Transitions
+public partial class Form1 : Form
 {
-    public partial class Form1 : Form
+    private readonly List<string> alphaImageFileNames = new();
+    private readonly List<Image> alphaImages = new();
+    private readonly double blurValue = 0.5; // Valeur par dï¿½faut pour le flou
+    private string brushIdA;
+
+    private string brushIdB;
+
+    // Ajouter ces variables membres pour suivre l'index de l'image alpha actuellement affichï¿½e
+    private int currentAlphaIndex;
+    private readonly FolderBrowserDialog folderBrowserDialog = new();
+    private double gamma = 0.5; // Valeur par dï¿½faut pour gamma
+    private string nameTextureA;
+    private string nameTextureB;
+    private readonly List<string> texture1FilePaths = new();
+    private readonly List<string> texture2FilePaths = new();
+    private readonly List<Image> textures1 = new();
+    private readonly List<Image> textures2 = new();
+
+    private int totalAlphaImages;
+    // Dï¿½clarez textBoxValue en tant que variable membre
+
+    // Dï¿½clarez une instance de la classe XMLgenerator
+    private XMLgenerator xmlGenerator = new();
+
+
+    public Form1()
     {
-        // Déclarez textBoxValue en tant que variable membre
-        
-        // Déclarez une instance de la classe XMLgenerator
-        private XMLgenerator xmlGenerator = new XMLgenerator();
-        private List<Image> textures1 = new List<Image>();
-        private List<Image> textures2 = new List<Image>();
-        private List<Image> alphaImages = new List<Image>();
-        private List<string> alphaImageFileNames = new List<string>();
-        private List<string> texture1FilePaths = new List<string>();
-        private List<string> texture2FilePaths = new List<string>();
-        private double gamma = 0.5; // Valeur par défaut pour gamma
-        private double blurValue = 0.5; // Valeur par défaut pour le flou
-        private FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-        // Ajouter ces variables membres pour suivre l'index de l'image alpha actuellement affichée
-        private int currentAlphaIndex = 0;
-        private int totalAlphaImages = 0;
-        private string nameTextureA;
-        private string brushIdA;
-        private string nameTextureB;
-        private string brushIdB;
+        InitializeComponent();
+        trackBarContrast.Minimum = 1;
+        trackBarContrast.Maximum = 20;
+        trackBarContrast.Value = 1; // Valeur par dï¿½faut
+        trackBarContrast.TickFrequency = 2; // Frï¿½quence des marqueurs sur la piste
+        //trackBarFlou.Minimum = 1;
+        //trackBarFlou.Maximum = 100;
+        //trackBarFlou.Value = 1; // Valeur par dï¿½faut
+        //trackBarFlou.TickFrequency = 10; // Frï¿½quence des marqueurs sur la piste
+        pictureBoxTexture1.SizeMode = PictureBoxSizeMode.Zoom;
+        pictureBoxTexture2.SizeMode = PictureBoxSizeMode.Zoom;
+        pictureBoxAlpha1.SizeMode = PictureBoxSizeMode.Zoom;
+        pictureBoxPreview.SizeMode = PictureBoxSizeMode.Zoom;
+        pictureBoxLandtile.SizeMode = PictureBoxSizeMode.Zoom;
+        totalAlphaImages = alphaImages.Count;
+        xmlGenerator = new XMLgenerator();
+    }
 
 
-        public Form1()
+    private void UpdatePictureBoxes()
+    {
+        // Effacer d'abord tous les contrï¿½les des FlowLayoutPanels
+        flowLayoutPanelTextures1.Controls.Clear();
+        flowLayoutPanelTextures2.Controls.Clear();
+        flowLayoutPanelAlphaImages.Controls.Clear();
+
+        // Afficher les textures 1
+        foreach (var texture in textures1) AddPictureBoxToFlowLayout(flowLayoutPanelTextures1, texture, 128, 128);
+
+        // Afficher les textures 2
+        foreach (var texture in textures2) AddPictureBoxToFlowLayout(flowLayoutPanelTextures2, texture, 128, 128);
+
+        // Afficher les alphaImages
+        foreach (var alphaImage in alphaImages)
+            AddPictureBoxToFlowLayout(flowLayoutPanelAlphaImages, alphaImage, 128, 128);
+    }
+
+    private void AddPictureBoxToFlowLayout(FlowLayoutPanel flowLayoutPanel, Image image, int width, int height)
+    {
+        var pictureBox = new PictureBox();
+        pictureBox.Image = image;
+        pictureBox.SizeMode = PictureBoxSizeMode.Zoom;
+        pictureBox.Size = new Size(width, height);
+
+        flowLayoutPanel.Controls.Add(pictureBox);
+    }
+
+
+    private Image RotateAndResizeImageForPreview(Image image, double angle)
+    {
+        // Crï¿½er une nouvelle image avec la taille spï¿½cifiï¿½e
+        // Bitmap rotatedImage = new Bitmap(46, 45);
+        var rotatedImage = new Bitmap(44, 44);
+
+        // Crï¿½er une matrice de transformation pour la rotation
+        var matrix = new Matrix();
+        matrix.Translate(23, 22); // Dï¿½placer l'origine lï¿½gï¿½rement vers la droite pour compenser l'ajustement
+        matrix.Rotate((float)angle); // Rotation
+        matrix.Translate(-16, -16); // Ajustement aprï¿½s la rotation
+
+        // Dessiner l'image d'origine rotatï¿½e sur la nouvelle image
+        using (var graphics = Graphics.FromImage(rotatedImage))
         {
-            InitializeComponent();
-            trackBarContrast.Minimum = 1;
-            trackBarContrast.Maximum = 20;
-            trackBarContrast.Value = 1; // Valeur par défaut
-            trackBarContrast.TickFrequency = 2; // Fréquence des marqueurs sur la piste
-            //trackBarFlou.Minimum = 1;
-            //trackBarFlou.Maximum = 100;
-            //trackBarFlou.Value = 1; // Valeur par défaut
-            //trackBarFlou.TickFrequency = 10; // Fréquence des marqueurs sur la piste
-            pictureBoxTexture1.SizeMode = PictureBoxSizeMode.Zoom;
-            pictureBoxTexture2.SizeMode = PictureBoxSizeMode.Zoom;
-            pictureBoxAlpha1.SizeMode = PictureBoxSizeMode.Zoom;
-            pictureBoxPreview.SizeMode = PictureBoxSizeMode.Zoom;
-            pictureBoxLandtile.SizeMode = PictureBoxSizeMode.Zoom;
-            totalAlphaImages = alphaImages.Count;
-            xmlGenerator = new XMLgenerator();
+            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            graphics.Transform = matrix;
 
+            // Dessiner l'image d'origine sur la nouvelle image en ajustant la taille pour qu'elle mesure exactement 46x45 pixels
+            graphics.DrawImage(image, -1, 0, 34, 33);
         }
 
+        return rotatedImage;
+    }
 
-        private void UpdatePictureBoxes()
+    // Gestionnaire d'ï¿½vï¿½nement pour le bouton "Prï¿½cï¿½dent"
+    // Gestionnaire d'ï¿½vï¿½nement pour le bouton "Prï¿½cï¿½dent"
+    private void btnPrevious_Click(object sender, EventArgs e)
+    {
+        // Dï¿½crï¿½menter l'index de l'image alpha actuellement affichï¿½e
+        currentAlphaIndex--;
+
+        // Vï¿½rifier si l'index est infï¿½rieur ï¿½ zï¿½ro, revenir ï¿½ la derniï¿½re image si c'est le cas
+        if (currentAlphaIndex < 0) currentAlphaIndex = alphaImages.Count - 1;
+
+        // Mettre ï¿½ jour la prï¿½visualisation avec l'image alpha correspondante
+        UpdatePreview();
+        UpdateAlphaNameLabel(); // Mettre ï¿½ jour le label du nom de l'alpha
+        // Mettre ï¿½ jour le label "compteur"
+        UpdateCounterLabel();
+    }
+
+    // Gestionnaire d'ï¿½vï¿½nement pour le bouton "Suivant"
+    private void btnNext_Click(object sender, EventArgs e)
+    {
+        // Incrï¿½menter l'index de l'image alpha actuellement affichï¿½e
+        currentAlphaIndex++;
+
+        // Vï¿½rifier si l'index dï¿½passe le nombre total d'images
+        if (currentAlphaIndex >= alphaImages.Count) currentAlphaIndex = 0; // Revenir au dï¿½but de la liste
+
+        // Mettre ï¿½ jour la prï¿½visualisation avec l'image alpha correspondante
+        UpdatePreview();
+        UpdateAlphaNameLabel(); // Mettre ï¿½ jour le label du nom de l'alpha
+        // Mettre ï¿½ jour le label "compteur"
+        UpdateCounterLabel();
+    }
+
+
+    // Mï¿½thode pour mettre ï¿½ jour le label avec le nom de l'alpha correspondant ï¿½ l'index actuel
+    // Mï¿½thode pour mettre ï¿½ jour le label avec le nom de l'alpha correspondant ï¿½ l'index actuel
+    private void UpdateAlphaNameLabel()
+    {
+        // Vï¿½rifier si l'index est valide
+        if (currentAlphaIndex >= 0 && currentAlphaIndex < alphaImageFileNames.Count)
         {
-            // Effacer d'abord tous les contrôles des FlowLayoutPanels
-            flowLayoutPanelTextures1.Controls.Clear();
-            flowLayoutPanelTextures2.Controls.Clear();
-            flowLayoutPanelAlphaImages.Controls.Clear();
+            // Rï¿½cupï¿½rer le nom du fichier de l'alpha ï¿½ partir de la liste
+            var alphaFileName = Path.GetFileName(alphaImageFileNames[currentAlphaIndex]);
 
-            // Afficher les textures 1
-            foreach (Image texture in textures1)
-            {
-                AddPictureBoxToFlowLayout(flowLayoutPanelTextures1, texture, 128, 128);
-            }
+            // Afficher le nom de l'alpha dans le label
+            lblAlphaName.Text = alphaFileName;
+        }
+    }
 
-            // Afficher les textures 2
-            foreach (Image texture in textures2)
-            {
-                AddPictureBoxToFlowLayout(flowLayoutPanelTextures2, texture, 128, 128);
-            }
 
-            // Afficher les alphaImages
-            foreach (Image alphaImage in alphaImages)
-            {
-                AddPictureBoxToFlowLayout(flowLayoutPanelAlphaImages, alphaImage, 128, 128);
-            }
+    // Mettre ï¿½ jour la prï¿½visualisation avec l'image alpha correspondant ï¿½ l'index actuel
+    private void UpdatePreview()
+    {
+        // Vï¿½rifier si des images alpha sont disponibles
+        if (alphaImages.Count > 0)
+        {
+            // Obtenir l'image alpha correspondant ï¿½ l'index actuel
+            var alphaImage = alphaImages[currentAlphaIndex];
+
+            // Gï¿½nï¿½rer la premiï¿½re image de transition avec l'image alpha sï¿½lectionnï¿½e
+            // Utilisez ï¿½galement les autres textures comme vous le faites actuellement
+            var texture1 = textures1[0];
+            var texture2 = textures2[0];
+            var transitionImage = GenerateTransition(texture1, texture2, alphaImage);
+
+            // Afficher la premiï¿½re image de transition dans pictureBoxPreview
+            pictureBoxPreview.Image = transitionImage;
+
+            // Redimensionner et pivoter l'image pour la prï¿½visualisation
+            var previewImage = RotateAndResizeImageForPreview(transitionImage, 45);
+
+            // Afficher la prï¿½visualisation dans pictureBoxLandtile
+            pictureBoxLandtile.Image = previewImage;
+        }
+    }
+
+
+    private void trackBarContrast_Scroll(object sender, EventArgs e)
+    {
+        gamma = trackBarContrast.Value;
+        UpdatePreview();
+    }
+
+    //private void trackBarFlou_Scroll(object sender, EventArgs e)
+    //{
+    //  blurValue = (double)trackBarFlou.Value / 10.0 * 2;
+    //UpdatePreview();
+    //}
+
+    private Bitmap GenerateTransition(Image texture1, Image texture2, Image alphaImage)
+    {
+        var blurredAlphaImage = ApplyGamma(ApplyGaussianBlur((Bitmap)alphaImage, blurValue), gamma);
+        var transitionImage = new Bitmap(texture1.Width, texture1.Height);
+
+        for (var x = 0; x < texture1.Width; x++)
+        for (var y = 0; y < texture1.Height; y++)
+        {
+            var alphaPixel = blurredAlphaImage.GetPixel(x, y);
+            var alpha = alphaPixel.GetBrightness();
+
+            var texture1Pixel = ((Bitmap)texture1).GetPixel(x, y);
+            var texture2Pixel = ((Bitmap)texture2).GetPixel(x, y);
+
+            var newRed = (int)(alpha * texture1Pixel.R + (1 - alpha) * texture2Pixel.R);
+            var newGreen = (int)(alpha * texture1Pixel.G + (1 - alpha) * texture2Pixel.G);
+            var newBlue = (int)(alpha * texture1Pixel.B + (1 - alpha) * texture2Pixel.B);
+
+            newRed = Math.Max(0, Math.Min(255, newRed));
+            newGreen = Math.Max(0, Math.Min(255, newGreen));
+            newBlue = Math.Max(0, Math.Min(255, newBlue));
+
+            transitionImage.SetPixel(x, y, Color.FromArgb(newRed, newGreen, newBlue));
         }
 
-        private void AddPictureBoxToFlowLayout(FlowLayoutPanel flowLayoutPanel, Image image, int width, int height)
-        {
-            PictureBox pictureBox = new PictureBox();
-            pictureBox.Image = image;
-            pictureBox.SizeMode = PictureBoxSizeMode.Zoom;
-            pictureBox.Size = new Size(width, height);
+        return transitionImage;
+    }
 
-            flowLayoutPanel.Controls.Add(pictureBox);
+    private Bitmap ApplyGaussianBlur(Bitmap image, double blurValue)
+    {
+        var filter = new BlurFilter();
+        filter.Sigma = blurValue;
+        return filter.ProcessImage(image);
+    }
+
+    private Bitmap ApplyGamma(Bitmap image, double gamma)
+    {
+        var adjustedImage = new Bitmap(image.Width, image.Height);
+
+        for (var x = 0; x < image.Width; x++)
+        for (var y = 0; y < image.Height; y++)
+        {
+            var originalPixel = image.GetPixel(x, y);
+            var newRed = (int)(255 * Math.Pow(originalPixel.R / 255.0, gamma));
+            var newGreen = (int)(255 * Math.Pow(originalPixel.G / 255.0, gamma));
+            var newBlue = (int)(255 * Math.Pow(originalPixel.B / 255.0, gamma));
+
+            newRed = Math.Max(0, Math.Min(255, newRed));
+            newGreen = Math.Max(0, Math.Min(255, newGreen));
+            newBlue = Math.Max(0, Math.Min(255, newBlue));
+
+            adjustedImage.SetPixel(x, y, Color.FromArgb(newRed, newGreen, newBlue));
         }
 
+        return adjustedImage;
+    }
 
+    private void btnSelectTexture1_Click(object sender, EventArgs e)
+    {
+        var openFileDialog = new OpenFileDialog();
+        openFileDialog.Filter = "Image Files (*.png;*.jpg;*.jpeg;*.gif;*.bmp)|*.png;*.jpg;*.jpeg;*.gif;*.bmp";
+        openFileDialog.Multiselect = true;
 
-        private Image RotateAndResizeImageForPreview(Image image, double angle)
+        if (openFileDialog.ShowDialog() == DialogResult.OK)
         {
-            // Créer une nouvelle image avec la taille spécifiée
-            Bitmap rotatedImage = new Bitmap(46, 45);
+            textures1.Clear();
+            texture1FilePaths.Clear(); // Clear the list before adding new paths
 
-            // Créer une matrice de transformation pour la rotation
-            Matrix matrix = new Matrix();
-            matrix.Translate(23, 22); // Déplacer l'origine légèrement vers la droite pour compenser l'ajustement
-            matrix.Rotate((float)angle); // Rotation
-            matrix.Translate(-16, -16); // Ajustement après la rotation
-
-            // Dessiner l'image d'origine rotatée sur la nouvelle image
-            using (Graphics graphics = Graphics.FromImage(rotatedImage))
-            {
-                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                graphics.Transform = matrix;
-
-                // Dessiner l'image d'origine sur la nouvelle image en ajustant la taille pour qu'elle mesure exactement 46x45 pixels
-                graphics.DrawImage(image, -1, 0, 34, 33);
-            }
-
-            return rotatedImage;
-        }
-
-        // Gestionnaire d'événement pour le bouton "Précédent"
-        // Gestionnaire d'événement pour le bouton "Précédent"
-        private void btnPrevious_Click(object sender, EventArgs e)
-        {
-            // Décrémenter l'index de l'image alpha actuellement affichée
-            currentAlphaIndex--;
-
-            // Vérifier si l'index est inférieur à zéro, revenir à la dernière image si c'est le cas
-            if (currentAlphaIndex < 0)
-            {
-                currentAlphaIndex = alphaImages.Count - 1;
-            }
-
-            // Mettre à jour la prévisualisation avec l'image alpha correspondante
-            UpdatePreview();
-            UpdateAlphaNameLabel(); // Mettre à jour le label du nom de l'alpha
-            // Mettre à jour le label "compteur"
-            UpdateCounterLabel();
-
-        }
-
-        // Gestionnaire d'événement pour le bouton "Suivant"
-        private void btnNext_Click(object sender, EventArgs e)
-        {
-            // Incrémenter l'index de l'image alpha actuellement affichée
-            currentAlphaIndex++;
-
-            // Vérifier si l'index dépasse le nombre total d'images
-            if (currentAlphaIndex >= alphaImages.Count)
-            {
-                currentAlphaIndex = 0; // Revenir au début de la liste
-            }
-
-            // Mettre à jour la prévisualisation avec l'image alpha correspondante
-            UpdatePreview();
-            UpdateAlphaNameLabel(); // Mettre à jour le label du nom de l'alpha
-            // Mettre à jour le label "compteur"
-            UpdateCounterLabel();
-        }
-
-
-        // Méthode pour mettre à jour le label avec le nom de l'alpha correspondant à l'index actuel
-        // Méthode pour mettre à jour le label avec le nom de l'alpha correspondant à l'index actuel
-        private void UpdateAlphaNameLabel()
-        {
-            // Vérifier si l'index est valide
-            if (currentAlphaIndex >= 0 && currentAlphaIndex < alphaImageFileNames.Count)
-            {
-                // Récupérer le nom du fichier de l'alpha à partir de la liste
-                string alphaFileName = Path.GetFileName(alphaImageFileNames[currentAlphaIndex]);
-
-                // Afficher le nom de l'alpha dans le label
-                lblAlphaName.Text = alphaFileName;
-            }
-        }
-
-
-        // Mettre à jour la prévisualisation avec l'image alpha correspondant à l'index actuel
-        private void UpdatePreview()
-        {
-            // Vérifier si des images alpha sont disponibles
-            if (alphaImages.Count > 0)
-            {
-                // Obtenir l'image alpha correspondant à l'index actuel
-                Image alphaImage = alphaImages[currentAlphaIndex];
-
-                // Générer la première image de transition avec l'image alpha sélectionnée
-                // Utilisez également les autres textures comme vous le faites actuellement
-                Image texture1 = textures1[0];
-                Image texture2 = textures2[0];
-                Bitmap transitionImage = GenerateTransition(texture1, texture2, alphaImage);
-
-                // Afficher la première image de transition dans pictureBoxPreview
-                pictureBoxPreview.Image = transitionImage;
-
-                // Redimensionner et pivoter l'image pour la prévisualisation
-                Image previewImage = RotateAndResizeImageForPreview(transitionImage, 45);
-
-                // Afficher la prévisualisation dans pictureBoxLandtile
-                pictureBoxLandtile.Image = previewImage;
-            }
-        }
-
-
-
-        private void trackBarContrast_Scroll(object sender, EventArgs e)
-        {
-            gamma = (double)trackBarContrast.Value;
-            UpdatePreview();
-        }
-
-        //private void trackBarFlou_Scroll(object sender, EventArgs e)
-        //{
-        //  blurValue = (double)trackBarFlou.Value / 10.0 * 2;
-        //UpdatePreview();
-        //}
-
-        private Bitmap GenerateTransition(Image texture1, Image texture2, Image alphaImage)
-        {
-            Bitmap blurredAlphaImage = ApplyGamma(ApplyGaussianBlur((Bitmap)alphaImage, blurValue), gamma);
-            Bitmap transitionImage = new Bitmap(texture1.Width, texture1.Height);
-
-            for (int x = 0; x < texture1.Width; x++)
-            {
-                for (int y = 0; y < texture1.Height; y++)
-                {
-                    Color alphaPixel = blurredAlphaImage.GetPixel(x, y);
-                    float alpha = alphaPixel.GetBrightness();
-
-                    Color texture1Pixel = ((Bitmap)texture1).GetPixel(x, y);
-                    Color texture2Pixel = ((Bitmap)texture2).GetPixel(x, y);
-
-                    int newRed = (int)(alpha * texture1Pixel.R + (1 - alpha) * texture2Pixel.R);
-                    int newGreen = (int)(alpha * texture1Pixel.G + (1 - alpha) * texture2Pixel.G);
-                    int newBlue = (int)(alpha * texture1Pixel.B + (1 - alpha) * texture2Pixel.B);
-
-                    newRed = Math.Max(0, Math.Min(255, newRed));
-                    newGreen = Math.Max(0, Math.Min(255, newGreen));
-                    newBlue = Math.Max(0, Math.Min(255, newBlue));
-
-                    transitionImage.SetPixel(x, y, Color.FromArgb(newRed, newGreen, newBlue));
-                }
-            }
-
-            return transitionImage;
-        }
-
-        private Bitmap ApplyGaussianBlur(Bitmap image, double blurValue)
-        {
-            BlurFilter filter = new BlurFilter();
-            filter.Sigma = blurValue;
-            return filter.ProcessImage(image);
-        }
-
-        private Bitmap ApplyGamma(Bitmap image, double gamma)
-        {
-            Bitmap adjustedImage = new Bitmap(image.Width, image.Height);
-
-            for (int x = 0; x < image.Width; x++)
-            {
-                for (int y = 0; y < image.Height; y++)
-                {
-                    Color originalPixel = image.GetPixel(x, y);
-                    int newRed = (int)(255 * Math.Pow(originalPixel.R / 255.0, gamma));
-                    int newGreen = (int)(255 * Math.Pow(originalPixel.G / 255.0, gamma));
-                    int newBlue = (int)(255 * Math.Pow(originalPixel.B / 255.0, gamma));
-
-                    newRed = Math.Max(0, Math.Min(255, newRed));
-                    newGreen = Math.Max(0, Math.Min(255, newGreen));
-                    newBlue = Math.Max(0, Math.Min(255, newBlue));
-
-                    adjustedImage.SetPixel(x, y, Color.FromArgb(newRed, newGreen, newBlue));
-                }
-            }
-
-            return adjustedImage;
-        }
-
-        private void btnSelectTexture1_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Image Files (*.png;*.jpg;*.jpeg;*.gif;*.bmp)|*.png;*.jpg;*.jpeg;*.gif;*.bmp";
-            openFileDialog.Multiselect = true;
-
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                textures1.Clear();
-                texture1FilePaths.Clear(); // Clear the list before adding new paths
-
-                foreach (string imagePath in openFileDialog.FileNames)
-                {
-                    try
-                    {
-                        Image texture1 = Image.FromFile(imagePath);
-                        textures1.Add(texture1);
-                        texture1FilePaths.Add(imagePath); // Add the file path to the list
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Une erreur s'est produite lors du chargement de l'image : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-
-                UpdatePictureBoxes();
-                UpdatePreview();
-            }
-        }
-
-        private void btnSelectTexture2_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Image Files (*.png;*.jpg;*.jpeg;*.gif;*.bmp)|*.png;*.jpg;*.jpeg;*.gif;*.bmp";
-            openFileDialog.Multiselect = true;
-
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                textures2.Clear();
-                texture2FilePaths.Clear(); // Clear the list before adding new paths
-
-                foreach (string imagePath in openFileDialog.FileNames)
-                {
-                    try
-                    {
-                        Image texture2 = Image.FromFile(imagePath);
-                        textures2.Add(texture2);
-                        texture2FilePaths.Add(imagePath); // Add the file path to the list
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Une erreur s'est produite lors du chargement de l'image : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-
-                UpdatePictureBoxes();
-                UpdatePreview();
-            }
-        }
-
-
-
-        private void btnSelectAlpha_Click(object sender, EventArgs e)
-        {
-            folderBrowserDialog.Description = "Sélectionner le dossier contenant les images alpha";
-
-            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
-            {
-                string folderPath = folderBrowserDialog.SelectedPath;
-
+            foreach (var imagePath in openFileDialog.FileNames)
                 try
                 {
-                    alphaImages.Clear();
-                    alphaImageFileNames.Clear(); // Ajout pour vider la liste des noms de fichiers
-
-                    string[] alphaFiles = Directory.GetFiles(folderPath, "*.png");
-
-                    foreach (string filePath in alphaFiles)
-                    {
-                        Image alphaImage = Image.FromFile(filePath);
-                        alphaImages.Add(alphaImage);
-
-                        // Ajouter le nom de fichier à la liste
-                        alphaImageFileNames.Add(filePath);
-                    }
-
-                    // Réinitialiser l'index de l'image alpha actuellement affichée à zéro
-                    currentAlphaIndex = 0;
-
-                    MessageBox.Show($"Chargement réussi : {alphaImages.Count} images alpha chargées.", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    var texture1 = Image.FromFile(imagePath);
+                    textures1.Add(texture1);
+                    texture1FilePaths.Add(imagePath); // Add the file path to the list
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Une erreur s'est produite lors du chargement des images alpha : " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Une erreur s'est produite lors du chargement de l'image : " + ex.Message, "Erreur",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
-                UpdatePictureBoxes();
-                UpdatePreview();
-                UpdateAlphaNameLabel(); // Mettre à jour le label du nom de l'alpha
-                UpdateCounterLabel();   // Mettre à jour le compteur
-            }
+
+            UpdatePictureBoxes();
+            UpdatePreview();
         }
+    }
 
+    private void btnSelectTexture2_Click(object sender, EventArgs e)
+    {
+        var openFileDialog = new OpenFileDialog();
+        openFileDialog.Filter = "Image Files (*.png;*.jpg;*.jpeg;*.gif;*.bmp)|*.png;*.jpg;*.jpeg;*.gif;*.bmp";
+        openFileDialog.Multiselect = true;
 
-        // Méthode pour mettre à jour le label "compteur" avec le numéro actuel de l'image alpha
-        private void UpdateCounterLabel()
+        if (openFileDialog.ShowDialog() == DialogResult.OK)
         {
-            int currentNumber = currentAlphaIndex + 1; // Ajouter 1 car les indices commencent à 0
-            int totalNumber = alphaImages.Count;
-            Compteur.Text = $"{currentNumber}/{totalNumber}";
-        }
+            textures2.Clear();
+            texture2FilePaths.Clear(); // Clear the list before adding new paths
 
-
-
-
-
-
-
-        private void btnGenerateTransition_Click(object sender, EventArgs e)
-        {
-            if (textures1.Count == 0 || textures2.Count == 0 || alphaImages.Count == 0)
-            {
-                MessageBox.Show("Veuillez sélectionner les textures et les images alpha avant de générer la transition.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
-            {
-                string outputPath = folderBrowserDialog.SelectedPath; // Utilisez le chemin sélectionné par l'utilisateur
-
-                int alphaIndex = 0;
-
-                // Convertir l'ID initial en entier
-                int initialID = Convert.ToInt32(XMLgenerator.InitialLandTypeId, 16);
-
-                foreach (Image alphaImage in alphaImages)
+            foreach (var imagePath in openFileDialog.FileNames)
+                try
                 {
-                    Image texture1 = textures1[alphaIndex % textures1.Count];
-                    Image texture2 = textures2[alphaIndex % textures2.Count];
-                    Bitmap transitionImage = GenerateTransition(texture1, texture2, alphaImage);
-
-                    // Enregistrer les images sans rotation
-                    string transitionFileName = Path.Combine(outputPath, $"0x{initialID.ToString("X")}.bmp");
-                    transitionImage.Save(transitionFileName, ImageFormat.Bmp);
-
-                    // Prévisualiser la transition
-                    Image previewImage = RotateAndResizeImageForPreview(transitionImage, 45);
-
-                    // Enregistrer les images avec rotation à 45 degrés et redimensionnées
-                    string rotatedTransitionFileName = Path.Combine(outputPath, $"RotatedTransition_{alphaIndex + 1}.bmp");
-                    previewImage.Save(rotatedTransitionFileName, ImageFormat.Bmp);
-
-                    // Incrémenter l'ID initial pour la prochaine transition
-                    initialID++;
-
-                    // Incrémenter l'index de l'image alpha
-                    alphaIndex++;
+                    var texture2 = Image.FromFile(imagePath);
+                    textures2.Add(texture2);
+                    texture2FilePaths.Add(imagePath); // Add the file path to the list
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Une erreur s'est produite lors du chargement de l'image : " + ex.Message, "Erreur",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
 
-                // Créez une instance de la classe XMLgenerator
-                XMLgenerator xmlGenerator = new XMLgenerator();
-
-                // Affectez la valeur de TextBox1.Text à la propriété InitialLandTypeId
-                XMLgenerator.InitialLandTypeId = TextBox1.Text;
-
-                // Récupérer les valeurs des TextBox
-                string nameTextureA = textBoxNameTextureA.Text;
-                string nameTextureB = textBoxNameTextureB.Text;
-                string brushIdA = textBoxBrushNumberA.Text;
-                string brushIdB = textBoxBrushNumberB.Text;
+            UpdatePictureBoxes();
+            UpdatePreview();
+        }
+    }
 
 
+    private void btnSelectAlpha_Click(object sender, EventArgs e)
+    {
+        folderBrowserDialog.Description = "Sï¿½lectionner le dossier contenant les images alpha";
 
-                // Appeler GenerateXML avec toutes les valeurs nécessaires
-                xmlGenerator.GenerateXML(texture1FilePaths, texture2FilePaths, alphaImageFileNames, outputPath, nameTextureA, nameTextureB, brushIdA, brushIdB);
+        if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+        {
+            var folderPath = folderBrowserDialog.SelectedPath;
 
-                MessageBox.Show("Génération terminée.", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                // Réinitialiser les listes et les contrôles
-                textures1.Clear();
-                textures2.Clear();
+            try
+            {
                 alphaImages.Clear();
+                alphaImageFileNames.Clear(); // Ajout pour vider la liste des noms de fichiers
 
-                pictureBoxTexture1.Image = null;
-                pictureBoxTexture2.Image = null;
-                pictureBoxAlpha1.Image = null;
-                pictureBoxPreview.Image = null;
-                pictureBoxLandtile.Image = null;
-                TextBox1.Text = null;
+                var alphaFiles = Directory.GetFiles(folderPath, "*.png");
 
-                flowLayoutPanelTextures1.Controls.Clear();
-                flowLayoutPanelTextures2.Controls.Clear();
-                flowLayoutPanelAlphaImages.Controls.Clear();
-            }
-        }
-
-
-
-
-
-        private void TextBox1_TextChanged(object sender, EventArgs e)
-        {
-            string newText = TextBox1.Text.Trim(); // Obtenez le texte du TextBox1 en supprimant les espaces blancs au début et à la fin
-            if (!string.IsNullOrEmpty(newText))
-            {
-                // Mettez à jour l'ID des lignes Land types dans le XML en accédant à la propriété InitialLandTypeId de l'instance de XMLgenerator
-                XMLgenerator.InitialLandTypeId = newText;
-            }
-        }
-
-
-
-
-
-
-
-
-        // Définition de la classe BlurFilter pour le flou gaussien
-        public class BlurFilter
-        {
-            private double[] kernel;
-            private int kernelSize;
-
-            public double Sigma { get; set; }
-
-            public BlurFilter()
-            {
-                Sigma = 1.0;
-                kernelSize = 1;
-                kernel = GenerateGaussianKernel(Sigma, kernelSize);
-            }
-
-            public Bitmap ProcessImage(Bitmap image)
-            {
-                Bitmap result = new Bitmap(image.Width, image.Height);
-
-                int k = kernelSize / 2;
-                int r, g, b;
-
-                for (int x = k; x < image.Width - k; x++)
+                foreach (var filePath in alphaFiles)
                 {
-                    for (int y = k; y < image.Height - k; y++)
-                    {
-                        r = g = b = 0;
+                    var alphaImage = Image.FromFile(filePath);
+                    alphaImages.Add(alphaImage);
 
-                        for (int i = -k; i <= k; i++)
-                        {
-                            for (int j = -k; j <= k; j++)
-                            {
-                                Color c = image.GetPixel(x + i, y + j);
-                                double w = kernel[i + k] * kernel[j + k];
-                                r += (int)(c.R * w);
-                                g += (int)(c.G * w);
-                                b += (int)(c.B * w);
-                            }
-                        }
-
-                        r = Math.Min(255, Math.Max(0, r));
-                        g = Math.Min(255, Math.Max(0, g));
-                        b = Math.Min(255, Math.Max(0, b));
-
-                        result.SetPixel(x, y, Color.FromArgb(r, g, b));
-                    }
+                    // Ajouter le nom de fichier ï¿½ la liste
+                    alphaImageFileNames.Add(filePath);
                 }
 
-                return result;
-            }
+                // Rï¿½initialiser l'index de l'image alpha actuellement affichï¿½e ï¿½ zï¿½ro
+                currentAlphaIndex = 0;
 
-            private double Gaussian(double x, double sigma)
+                MessageBox.Show($"Chargement rï¿½ussi : {alphaImages.Count} images alpha chargï¿½es.", "Succï¿½s",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
             {
-                return Math.Exp(-(x * x) / (2 * sigma * sigma)) / (Math.Sqrt(2 * Math.PI) * sigma);
+                MessageBox.Show("Une erreur s'est produite lors du chargement des images alpha : " + ex.Message,
+                    "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
-            private double[] GenerateGaussianKernel(double sigma, int size)
+            UpdatePictureBoxes();
+            UpdatePreview();
+            UpdateAlphaNameLabel(); // Mettre ï¿½ jour le label du nom de l'alpha
+            UpdateCounterLabel(); // Mettre ï¿½ jour le compteur
+        }
+    }
+
+
+    // Mï¿½thode pour mettre ï¿½ jour le label "compteur" avec le numï¿½ro actuel de l'image alpha
+    private void UpdateCounterLabel()
+    {
+        var currentNumber = currentAlphaIndex + 1; // Ajouter 1 car les indices commencent ï¿½ 0
+        var totalNumber = alphaImages.Count;
+        Compteur.Text = $"{currentNumber}/{totalNumber}";
+    }
+
+
+    private void btnGenerateTransition_Click(object sender, EventArgs e)
+    {
+        if (textures1.Count == 0 || textures2.Count == 0 || alphaImages.Count == 0)
+        {
+            MessageBox.Show("Veuillez sï¿½lectionner les textures et les images alpha avant de gï¿½nï¿½rer la transition.",
+                "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
+        }
+
+        if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+        {
+            var outputPath = folderBrowserDialog.SelectedPath; // Utilisez le chemin sï¿½lectionnï¿½ par l'utilisateur
+
+            var alphaIndex = 0;
+
+            // Convertir l'ID initial en entier
+            var initialID = Convert.ToInt32(XMLgenerator.InitialLandTypeId, 16);
+
+            foreach (var alphaImage in alphaImages)
             {
-                double[] kernel = new double[size];
-                int center = size / 2;
+                var texture1 = textures1[alphaIndex % textures1.Count];
+                var texture2 = textures2[alphaIndex % textures2.Count];
+                var transitionImage = GenerateTransition(texture1, texture2, alphaImage);
 
-                for (int i = 0; i < size; i++)
-                {
-                    kernel[i] = Gaussian(i - center, sigma);
-                }
+                // Enregistrer les images sans rotation
+                var transitionFileName = Path.Combine(outputPath, $"0x{initialID.ToString("X")}.bmp");
+                transitionImage.Save(transitionFileName, ImageFormat.Bmp);
 
-                // Normalize the kernel
-                double sum = 0;
-                foreach (double value in kernel)
-                {
-                    sum += value;
-                }
+                // Prï¿½visualiser la transition
+                var previewImage = RotateAndResizeImageForPreview(transitionImage, 45);
 
-                for (int i = 0; i < size; i++)
-                {
-                    kernel[i] /= sum;
-                }
+                // Enregistrer les images avec rotation ï¿½ 45 degrï¿½s et redimensionnï¿½es
+                var rotatedTransitionFileName = Path.Combine(outputPath, $"RotatedTransition_{alphaIndex + 1}.bmp");
+                previewImage.Save(rotatedTransitionFileName, ImageFormat.Bmp);
 
-                return kernel;
+                // Incrï¿½menter l'ID initial pour la prochaine transition
+                initialID++;
+
+                // Incrï¿½menter l'index de l'image alpha
+                alphaIndex++;
             }
+
+            // Crï¿½ez une instance de la classe XMLgenerator
+            var xmlGenerator = new XMLgenerator();
+
+            // Affectez la valeur de TextBox1.Text ï¿½ la propriï¿½tï¿½ InitialLandTypeId
+            XMLgenerator.InitialLandTypeId = TextBox1.Text;
+
+            // Rï¿½cupï¿½rer les valeurs des TextBox
+            var nameTextureA = textBoxNameTextureA.Text;
+            var nameTextureB = textBoxNameTextureB.Text;
+            var brushIdA = textBoxBrushNumberA.Text;
+            var brushIdB = textBoxBrushNumberB.Text;
+
+
+            // Appeler GenerateXML avec toutes les valeurs nï¿½cessaires
+            xmlGenerator.GenerateXML(texture1FilePaths, texture2FilePaths, alphaImageFileNames, outputPath,
+                nameTextureA, nameTextureB, brushIdA, brushIdB);
+
+            MessageBox.Show("Gï¿½nï¿½ration terminï¿½e.", "Succï¿½s", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            // Rï¿½initialiser les listes et les contrï¿½les
+            textures1.Clear();
+            textures2.Clear();
+            alphaImages.Clear();
+
+            pictureBoxTexture1.Image = null;
+            pictureBoxTexture2.Image = null;
+            pictureBoxAlpha1.Image = null;
+            pictureBoxPreview.Image = null;
+            pictureBoxLandtile.Image = null;
+            TextBox1.Text = null;
+
+            flowLayoutPanelTextures1.Controls.Clear();
+            flowLayoutPanelTextures2.Controls.Clear();
+            flowLayoutPanelAlphaImages.Controls.Clear();
+        }
+    }
+
+
+    private void TextBox1_TextChanged(object sender, EventArgs e)
+    {
+        var newText =
+            TextBox1.Text.Trim(); // Obtenez le texte du TextBox1 en supprimant les espaces blancs au dï¿½but et ï¿½ la fin
+        if (!string.IsNullOrEmpty(newText))
+            // Mettez ï¿½ jour l'ID des lignes Land types dans le XML en accï¿½dant ï¿½ la propriï¿½tï¿½ InitialLandTypeId de l'instance de XMLgenerator
+            XMLgenerator.InitialLandTypeId = newText;
+    }
+
+    private void textBoxNameTextureA_TextChanged(object sender, EventArgs e)
+    {
+        // Rï¿½cupï¿½rer le texte du TextBox et l'assigner ï¿½ nameTextureA
+        nameTextureA = textBoxNameTextureA.Text;
+    }
+
+    private void textBoxNameTextureB_TextChanged(object sender, EventArgs e)
+    {
+        // Rï¿½cupï¿½rer le texte du TextBox et l'assigner ï¿½ nameTextureB
+        nameTextureB = textBoxNameTextureB.Text;
+    }
+
+    private void textBoxBrushNumberA_TextChanged(object sender, EventArgs e)
+    {
+        // Rï¿½cupï¿½rer le texte du TextBox et l'assigner ï¿½ brushIdA
+        brushIdA = textBoxBrushNumberA.Text;
+    }
+
+    private void textBoxBrushNumberB_TextChanged(object sender, EventArgs e)
+    {
+        // Rï¿½cupï¿½rer le texte du TextBox et l'assigner ï¿½ brushIdB
+        brushIdB = textBoxBrushNumberB.Text;
+    }
+
+
+    // Dï¿½finition de la classe BlurFilter pour le flou gaussien
+    public class BlurFilter
+    {
+        private readonly double[] kernel;
+        private readonly int kernelSize;
+
+        public BlurFilter()
+        {
+            Sigma = 1.0;
+            kernelSize = 1;
+            kernel = GenerateGaussianKernel(Sigma, kernelSize);
         }
 
-        private void textBoxNameTextureA_TextChanged(object sender, EventArgs e)
+        public double Sigma { get; set; }
+
+        public Bitmap ProcessImage(Bitmap image)
         {
-            // Récupérer le texte du TextBox et l'assigner à nameTextureA
-            nameTextureA = textBoxNameTextureA.Text;
+            var result = new Bitmap(image.Width, image.Height);
+
+            var k = kernelSize / 2;
+            int r, g, b;
+
+            for (var x = k; x < image.Width - k; x++)
+            for (var y = k; y < image.Height - k; y++)
+            {
+                r = g = b = 0;
+
+                for (var i = -k; i <= k; i++)
+                for (var j = -k; j <= k; j++)
+                {
+                    var c = image.GetPixel(x + i, y + j);
+                    var w = kernel[i + k] * kernel[j + k];
+                    r += (int)(c.R * w);
+                    g += (int)(c.G * w);
+                    b += (int)(c.B * w);
+                }
+
+                r = Math.Min(255, Math.Max(0, r));
+                g = Math.Min(255, Math.Max(0, g));
+                b = Math.Min(255, Math.Max(0, b));
+
+                result.SetPixel(x, y, Color.FromArgb(r, g, b));
+            }
+
+            return result;
         }
 
-        private void textBoxNameTextureB_TextChanged(object sender, EventArgs e)
+        private double Gaussian(double x, double sigma)
         {
-            // Récupérer le texte du TextBox et l'assigner à nameTextureB
-            nameTextureB = textBoxNameTextureB.Text;
+            return Math.Exp(-(x * x) / (2 * sigma * sigma)) / (Math.Sqrt(2 * Math.PI) * sigma);
         }
 
-        private void textBoxBrushNumberA_TextChanged(object sender, EventArgs e)
+        private double[] GenerateGaussianKernel(double sigma, int size)
         {
-            // Récupérer le texte du TextBox et l'assigner à brushIdA
-            brushIdA = textBoxBrushNumberA.Text;
-        }
+            var kernel = new double[size];
+            var center = size / 2;
 
-        private void textBoxBrushNumberB_TextChanged(object sender, EventArgs e)
-        {
-            // Récupérer le texte du TextBox et l'assigner à brushIdB
-            brushIdB = textBoxBrushNumberB.Text;
+            for (var i = 0; i < size; i++) kernel[i] = Gaussian(i - center, sigma);
+
+            // Normalize the kernel
+            double sum = 0;
+            foreach (var value in kernel) sum += value;
+
+            for (var i = 0; i < size; i++) kernel[i] /= sum;
+
+            return kernel;
         }
     }
 }
-
-
