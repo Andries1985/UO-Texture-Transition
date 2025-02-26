@@ -88,9 +88,10 @@ public partial class Form1 : Form
 
         // Cr�er une matrice de transformation pour la rotation
         var matrix = new Matrix();
-        matrix.Translate(23, 22); // D�placer l'origine l�g�rement vers la droite pour compenser l'ajustement
+        // matrix.Translate(23, 22); // Move the origin slightly to the right to compensate for the adjustment (46x45)
+        matrix.Translate(22, 22);
         matrix.Rotate((float)angle); // Rotation
-        matrix.Translate(-16, -16); // Ajustement apr�s la rotation
+        matrix.Translate(-16, -16); // Adjustment after rotation
 
         // Dessiner l'image d'origine rotat�e sur la nouvelle image
         using (var graphics = Graphics.FromImage(rotatedImage))
@@ -99,7 +100,8 @@ public partial class Form1 : Form
             graphics.Transform = matrix;
 
             // Dessiner l'image d'origine sur la nouvelle image en ajustant la taille pour qu'elle mesure exactement 46x45 pixels
-            graphics.DrawImage(image, -1, 0, 34, 33);
+            // graphics.DrawImage(image, -1, 0, 34, 33);
+            graphics.DrawImage(image, -1, 0, 32, 32);
         }
 
         return rotatedImage;
@@ -271,7 +273,7 @@ public partial class Form1 : Form
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Une erreur s'est produite lors du chargement de l'image : " + ex.Message, "Erreur",
+                    MessageBox.Show("An error occurred while loading the image : " + ex.Message, "Error",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
 
@@ -300,7 +302,7 @@ public partial class Form1 : Form
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Une erreur s'est produite lors du chargement de l'image : " + ex.Message, "Erreur",
+                    MessageBox.Show("An error occurred while loading the image: " + ex.Message, "Error",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
 
@@ -312,7 +314,7 @@ public partial class Form1 : Form
 
     private void btnSelectAlpha_Click(object sender, EventArgs e)
     {
-        folderBrowserDialog.Description = "S�lectionner le dossier contenant les images alpha";
+        folderBrowserDialog.Description = "Select the folder containing the alpha images";
 
         if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
         {
@@ -337,13 +339,13 @@ public partial class Form1 : Form
                 // R�initialiser l'index de l'image alpha actuellement affich�e � z�ro
                 currentAlphaIndex = 0;
 
-                MessageBox.Show($"Chargement r�ussi : {alphaImages.Count} images alpha charg�es.", "Succ�s",
+                MessageBox.Show($"Loaded successfully: {alphaImages.Count} alpha images loaded.", "Success",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Une erreur s'est produite lors du chargement des images alpha : " + ex.Message,
-                    "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("An error occurred while loading alpha images : " + ex.Message,
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             UpdatePictureBoxes();
@@ -367,8 +369,8 @@ public partial class Form1 : Form
     {
         if (textures1.Count == 0 || textures2.Count == 0 || alphaImages.Count == 0)
         {
-            MessageBox.Show("Veuillez s�lectionner les textures et les images alpha avant de g�n�rer la transition.",
-                "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show("Please select textures and alpha images before generating the transition.",
+                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return;
         }
 
@@ -422,7 +424,7 @@ public partial class Form1 : Form
             xmlGenerator.GenerateXML(texture1FilePaths, texture2FilePaths, alphaImageFileNames, outputPath,
                 nameTextureA, nameTextureB, brushIdA, brushIdB);
 
-            MessageBox.Show("G�n�ration termin�e.", "Succ�s", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Generate Completed.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             // R�initialiser les listes et les contr�les
             textures1.Clear();
